@@ -1,5 +1,5 @@
 package Text::Diff3::Diff3;
-# diff3 plugin
+# diff3 plug-in
 use 5.006;
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ our $VERSION = '0.05';
 
 use base qw( Text::Diff3::Base );
 
-# the three way diff procedure based on the GNU diff3.c by Randy Smith.
+# the three-way diff procedure based on the GNU diff3.c by Randy Smith.
 sub diff3 {
     my $self = shift;
     my( $text0, $text2, $text1 ) = @_;
@@ -105,7 +105,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3::Diff3 - diff3 plugin
+Text::Diff3::Diff3 - diff3 plug-in
 
 =head1 SYNOPSYS
 
@@ -119,28 +119,28 @@ Text::Diff3::Diff3 - diff3 plugin
 
 =head1 ABSTRACT
 
-This is a plugin to compute differnce sets between three text
+This is a plug-in to compute difference sets between three text
 buffers ported from GNU diff3.c written by Randy Smith.
 
 =head1 DESCRIPTION
 
-Please see how to use this plugin through a factory in a Text::Diff3
+Please see how to use this plug-in through a factory in a Text::Diff3
 document.
 
 =head1 WORK WITH diff
 
-diff3 processor needs to support of a two way diff plugin module.
-There are two requirements for a diff plugin module.
+Diff3 processor needs to support of a two-way diff plug-in module.
+There are two requirements for a diff plug-in module.
 
-First, it must independ upon the policy of line numbers in text buffers.
-Not only line numbers may start zero normally Perl's array, but also it
-start one  diff(1) command output. In this module, any line number scheme
-is hidden in the capsul of text buffer class. 
+First, it must independent upon the policy of line numbers in text
+buffers. Not only line numbers may start zero normally Perl's array,
+but also it start one diff(1) command output. In this module, any
+line number scheme is hidden in the capsule of text buffer class.
 
-Second, it must adapt line number parameters in a delete range and an
-append one due to the numbers of lines treatments in diff3 processor. 
-For instanse, diff plugin modifies the ranges in a same scheme of line
-number started from 1 such as diff(1) command as follows.
+Second, it must adapt line number parameters in a delete range and
+an append one due to the numbers of lines treatments in diff3 processor.
+For instance, diff plug-in modifies the ranges in a same scheme of
+line number started from 1 such as diff(1) command as follows.
 
   diff(1) to modified; # original   changed text
   1c1 to 1,1c1,1; # [ qw( a b ) ]   [ qw( A b ) ]
@@ -157,9 +157,10 @@ for the original text side.
 In delete cases from 5th to 7th one, increment low line number
 for the modified text side.
 
-Their line numbers are normally droped in the diff(1) command.
+Their line numbers are normally dropped in the diff(1) command.
 So that you do their modifications simply adding success value
-from the output one if you make a plugin diff(1) command invoker.
+from the output one if you make a plug-in diff(1) command invoker.
+
 
 =head1 SEE ALSO
 

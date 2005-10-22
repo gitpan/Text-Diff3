@@ -1,5 +1,5 @@
 package Text::Diff3::Text;
-# line number scheme free text buffer
+# a line number scheme free text buffer
 use 5.006;
 use strict;
 use warnings;
@@ -67,9 +67,9 @@ Text::Diff3::Text - line number scheme free text buffer
 
   use Text::Diff3;
   my $f = Text::Diff3::Factory->new;
-  my $t0 = $f->create_text([ map{chomp;$_} <F0> ]); # do not dup internally
-  my $t1 = $f->create_text( $string ); # make array refs
-  # follows four take same output
+  my $t0 = $f->create_text([ map{chomp;$_} <F0> ]); # do not dup internally.
+  my $t1 = $f->create_text( $string ); # make array references.
+  # follows four take same output.
   print $_, "\n" for @{ $t0->text };
   print $t0->as_string_at( $_ ) for $t0->range;
   print $t0->as_string_at( $_ ) for $t0->first_index .. $t0->last_index;
@@ -84,16 +84,17 @@ Text::Diff3::Text - line number scheme free text buffer
   
 =head1 ABSTRACT
 
-This is a wrapper for a Perl's arrayref, improving line number scheme
-free and limiting fetching from last element by minus index. Normally
-line number starts 1 in compatible with diff command tools. But you can
-change it another value like as 0 override first_index methods.
+This is a wrapper for a Perl's array reference, improving line number
+scheme free and limiting fetching from last element by minus index.
+Normally line number starts 1 in compatible with diff command tools.
+But you can change it another value like as 0 override first index
+methods.
 
 =head1 DESCRIPTION
 
 =head2 create
 
-Author recommends you to create an instanse of text by using with
+Author recommends you to create an instance of text by using with
 a factory as follows.
 
   use SomeFactory;
@@ -101,47 +102,47 @@ a factory as follows.
   my $t = $f->create_text( string or arrayref );
 
 Text::Diff3::Factory is a class to packaging several classes
-for the buildin diff processor.
+for the build-in diff processor.
 
-When pass a string, it splited /\n/ before store the line buffers.
-When pass a arrayref, it simply assigned text properties without
-duplication. In the later case, the side effects will happen
+When pass a string, it is split by /\n/ before store the line buffers.
+When pass an array reference, it simply assigned text properties
+without duplication. In the later case, the side effects will happen
 if you use same reference at another place.
 
 =head2 text
 
-line buffer's property. It is an arrayref.
+This is a property of the line buffer. It is an array reference.
 
 =head2 list
 
-line buffer's property as same as text. It is an arrayref.
-This is an interface properties for ListMixin.
+This is same as the text property, which is an interface property
+for ListMixin.
 
 =head2 first_index
 
-first_index value accessing by the `at' method.
+This is first-index accessible by the `at' method.
 
 =head2 last_index
 
-last_index value accessing by the `at' method.
+This is last-index accessible by the `at' method.
 
 =head2 range
 
-returns a range between fist_index and last_index
+This returns a range between fist-index and last-index.
 
 =head2 at
 
-returns a line specified by a line number.
-If line number is out of range, returns undef.
+This returns a line specified by a line number.
+If line number is out of range, it returns undef.
 
 =head2 as_string_at
 
-short cut for line accessing through `at'.
-If line number is out of range, returns '', in otherwise returns line . "\n".
+This is short cut for line accessing through `at'.
+If line number is out of range, it returns '', in otherwise returns line."\n".
 
 =head2 eq_at
 
-short cut for comparison line and other string.
+This is short cut for comparison line and other string.
 
 =head1 AUTHOR
 

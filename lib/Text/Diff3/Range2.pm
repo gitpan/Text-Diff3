@@ -1,5 +1,5 @@
 package Text::Diff3::Range2;
-# two way difference container
+# a two-way difference container
 use 5.006;
 use strict;
 use warnings;
@@ -45,7 +45,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3::Range2 - two way difference container
+Text::Diff3::Range2 - two-way difference container
 
 =head1 SYNOPSIS
 

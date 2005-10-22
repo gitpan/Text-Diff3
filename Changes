@@ -1,11 +1,14 @@
 Revision history for Perl extension Text::Diff3.
 
-0.05  Wed Oct 19 20:51:23 2005
+0.06  Sat Oct 23 15:29:17 2005 JST
+	- Collect mistyping in PODs.
+
+0.05  Wed Oct 19 20:51:23 2005 JST
 	- Separete into several files.
 	- Change List now simple list. Leave off first delegator.
 	- Add descriptions.
 
-0.04  Tue Oct 18 15:10:17 2005
+0.04  Tue Oct 18 15:10:17 2005 JST
 	- Add Ruby style iterator to ListBase (0.04)
 	- Add randam3.pl for test text generator (0.04)
 	- Add merge.pl for test. compatible with diff3 -m -A my org your (0.04)

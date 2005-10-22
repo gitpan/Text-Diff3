@@ -2,7 +2,7 @@ package Text::Diff3::ListMixin;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 sub at {
     my( $self, $x ) = @_;
@@ -64,7 +64,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3::ListMixin - mixin delegators to property `list'
+Text::Diff3::ListMixin - List mix-in.
 
 =head1 SYNOPSIS
 
@@ -92,7 +92,7 @@ Text::Diff3::ListMixin - mixin delegators to property `list'
   
 =head1 ABSTRACT
 
-This is a mixin class delived delegators to the list properties.
+This is a mix-in class derived delegates to the list properties.
 
 =head1 AUTHOR
 

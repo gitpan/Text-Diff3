@@ -2,7 +2,7 @@ package Text::Diff3;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Text::Diff3::Factory;
 
@@ -12,7 +12,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3 - compute three way differences between text.
+Text::Diff3 - compute three-way differences between texts.
 
 =head1 SYNOPSYS
 
@@ -34,36 +34,35 @@ Text::Diff3 - compute three way differences between text.
 
 =head1 ABSTRACT
 
-This is a Perl module to compute differnce sets between three text
-buffers ported from GNU diff3.c written by Randy Smith.
+This is a Perl module to compute difference sets between three texts
+ported from GNU diff3.c written by Randy Smith.
 
 =head1 DESCRIPTION
 
-The three way diff procedure (diff3) might be required building
-an application to arbitrate manipulations under concurrent works.
-This diff3 code into Perl language has ported from GNU diff3.c
-widely used.
+To build some applications to arbitrate manipulations under concurrent
+works, it is necessary to compare three texts line by line. This diff3
+code into Perl language has ported from GNU diff3.c widely used.
 
 =head2 create
 
-Author recommends you to create an instanse of diff prosessor by using
-with a factory as follows.
+Author recommends you to create an instance of diff processor
+by using with a factory as follows.
 
   use SomeFactory;
   my $f = SomeFactory->new;
   my $p = $f->create_diff3;
 
 Text::Diff3::Factory is a class to packaging several classes
-for the buildin diff processor.
+for the build-in diff processor.
 
 =head2 diff3
 
-Performing the diff3 process, we send a `diff3' message with three text
-instanses to the receiver
+Performing the diff3 process, we send a `diff3' message with three
+text instances to the receiver, 
 
   my $diff3 = $p->diff3( $mytest, $origial, $yourtext );
 
-Where the parameters of text might be a kind of as follows.
+where the parameters of text might be a kind have as follows.
 
 =over 2
 
@@ -73,34 +72,31 @@ Scalar string separated by "\n".
 
 =item *
 
-Unblessed or blessed one dimentional array refs.
+Unblessed or blessed one-dimensional array references,
+or scalar string separated by "\n".
 
 =item *
 
-An already blessed instanse by Text::Diff3::Text or an another the
-equivalent type as one (not required descendant class of one).
+An already blessed instance by Text::Diff3::Text
+or an equivalent type as one.
 
 =back
 
 After the process, the receiver returns the list as difference sets.
 
   case $range3->type
-  when 0: changes occured in mytext ($text0).
-  when 1: changes occured in yourtext ($text1).
+  when 0: changes occured in my text ($text0).
+  when 1: changes occured in your text ($text1).
   when 2: changes occured in original ($text2).
   when 'A': confict!
   end
 
-Additionally, GNU diff3.c treats as conflict when delete same lines both
-mytext and yourtext (why?).
+Additionally, GNU diff3.c treats as conflict when delete lines both
+my text and your text.
 
 =head1 SEE ALSO
 
-GNU/diffutils/2.7/diff3.c
-
-   Three way file comparison program (diff3) for Project GNU.
-   Copyright (C) 1988, 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
-   Written by Randy Smith
+GNU/diffutils/2.8/diff3.c written by Randy Smith
 
 P. Heckel. ``A technique for isolating differences between files.''
 Communications of the ACM, Vol. 21, No. 4, page 264, April 1978.

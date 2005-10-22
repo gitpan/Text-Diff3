@@ -1,5 +1,5 @@
 package Text::Diff3::DiffHeckel;
-# P. Heckel's two way diff plugin
+# two-way diff plug-in
 use 5.006;
 use strict;
 use warnings;
@@ -74,7 +74,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3::DiffHeckel - P. Heckel's diff plugin
+Text::Diff3::DiffHeckel - two-way diff plug-in
 
 =head1 SYNOPSIS
 
@@ -97,54 +97,54 @@ Text::Diff3::DiffHeckel - P. Heckel's diff plugin
 
 =head1 ABSTRACT
 
-This is a package for Text::Diff3 to compute difference
-sets between two text buffers based on the P. Heckel's algorithm.
+This is a package for Text::Diff3 to compute difference sets between
+two text buffers based on the P. Heckel's algorithm.
 Anyone may change this to an another diff or a its wrapper module
-by injecting of a your custom Factory instanse.
+by a your custom Factory instance.
 
 =head1 DESCRIPTION
 
-Text::Diff3 needs a support of computing difference sets
-between two text buffers (diff). As the diff(1) command,
-the required diff module creates a list of tapples recorded
-an information set of a change type (such as a,c,d) and a range
-of line numbers between two text buffers.
+Text::Diff3 needs a support of computing difference sets between
+two text buffers (diff). As the diff(1) command, the required diff
+module creates a list of tipples recorded an information set of a
+change type (such as a, c, or d) and a range of line numbers
+between two text buffers.
 
-Since there are several algorithms and their implementations
-for the diff computation, Text::Diff3 makes a plan
-independ on any specific diff routine. It calls a pluggable diff
-processor instanse specifed in a factory commonly used in
-Text::Diff3. Anyone may change diff plugin according to
-their text properties.
+Since there are several algorithms and their implementations for
+the diff computation, Text::Diff3 makes a plan independent on any
+specific diff routine. It calls a pluggable diff processor instance
+specified in a factory commonly used in Text::Diff3. Anyone may
+change diff plug-in according to text properties.
 
-For users convenience, Text::Diff3 includes small diff
-based on the P. Heckel's algorithm. On the other hands, many other
-systems use the popular Least Common Seaquense (LCS) algorithm.
-The merits for each algorithms are case by case. In author's
-experience, two algorithms generates almost same results for small
-local changes in the text. In some cases, such as moving blocks of
-lines, it happened quite differences in results.
+For users convenience, Text::Diff3 includes small diff based on the
+P. Heckel's algorithm. On the other hands, many other systems use
+the popular Least Common Sequence (LCS) algorithm. The merits for
+each algorithm are case by case. In author's experience, two algorithms
+generate almost same results for small local changes in the text.
+In some cases, such as moving blocks of lines, it happened quite
+differences in results.
+
 
 =head2 create
 
-Author recommends you to create an instanse of diff prosessor by using
-with a factory as follows.
+Author recommends you to create an instance of diff processor
+by using with a factory as follows.
 
   use SomeFactory;
   my $f = SomeFactory->new;
   my $p = $f->create_diff;
 
 Text::Diff3::Factory is a class to packaging several classes
-for the buildin diff processor.
+for the building diff processor.
 
 =head2 diff
 
-Performing the diff process, we send a `diff' message with two text
-instanses to the receiver
+Performing the diff process, we send a `diff' message with two
+text instances to the receiver,
 
   my $diff2 = $p->diff( $origial, $mytext );
 
-Where the parameters of text might be a kind of as follows.
+where the parameters of text are a kind as follows.
 
 =over 2
 
@@ -154,12 +154,12 @@ Scalar string separated by "\n".
 
 =item *
 
-Unblessed or blessed one dimentional array refs.
+References of a one-dimensional array.
 
 =item *
 
-An already blessed instanse by Text::Diff3::Text or an another the
-equivalent type as one (not required descendant class of one).
+An already blessed instance by Text::Diff3::Text or an equivalent
+type as one.
 
 =back
 

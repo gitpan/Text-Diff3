@@ -3,7 +3,7 @@ package Text::Diff3::Factory;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Text::Diff3::Diff3;
 use Text::Diff3::DiffHeckel;
@@ -36,7 +36,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3::DiffHeckel - Factory for packages
+Text::Diff3::Factory - Factory for packages.
 
 =head1 SYNOPSIS
 
@@ -47,17 +47,17 @@ Text::Diff3::DiffHeckel - Factory for packages
 
 =head1 ABSTRACT
 
-This is the factory for the Text::Diff3 module. It provides
-you to make data and processing instanses, such as text, diff3,
-and diff. If you needs to use some data or processor class, you
+This is the factory for the Text::Diff3 module. It provides you
+to make data and processing instances, such as text, diff3,
+and diff. If you need to use some data or processor class, you
 replace this as your like.
 
 =head1 DESCRIPTION
 
 =head2 new
 
-Return a factory instanse. In current, the factory does not create
-instanse but returns class itself.
+Return a factory instance. In current, the factory does not create
+instance but returns class of it.
 
 =head2 create_text
 
@@ -65,15 +65,15 @@ Create a text buffer object from parameters.
 
 =head2 create_diff3
 
-Create a diff3 processor. No parameters.
+Create a diff3 processor.
 
 =head2 create_diff
 
-Create a two way diff processor. No parameters.
+Create a two-way diff processor.
 
 =head2 create_list3
 
-Create a diff3 sets instanse (internally used).
+Create a diff3 sets instance (internally used).
 
 =head2 create_range3
 
@@ -85,11 +85,11 @@ Create a diff3 range container but it has null values (internally used).
 
 =head2 create_list2
 
-Create a diff sets instanse (internally used).
+Create a diff sets instance (internally used).
 
 =head2 create_range2
 
-Create a two way diff range container (internally used).
+Create a two-way diff range container (internally used).
 
 =head1 AUTHOR
 

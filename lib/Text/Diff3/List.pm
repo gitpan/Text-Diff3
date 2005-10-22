@@ -27,7 +27,7 @@ __END__
 
 =head1 NAME
 
-Text::Diff3::List - list of difference sets
+Text::Diff3::List - a list of difference sets
 
 =head1 SYNOPSIS
 
