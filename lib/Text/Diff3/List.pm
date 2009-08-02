@@ -3,22 +3,23 @@ package Text::Diff3::List;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
-use base qw( Text::Diff3::ListMixin Text::Diff3::Base );
+use base qw(Text::Diff3::ListMixin Text::Diff3::Base);
 
-sub list { $_[0]->{list} }
+sub list { return $_[0]->{list} }
 
 sub initialize {
-    my $self = shift;
-    $self->SUPER::initialize( @_ );
-    shift; # drop factory
-    $self->{list} = [ @_ ];
+    my($self, @arg) = @_;
+    $self->SUPER::initialize(@arg);
+    shift @arg; # drop factory
+    $self->{list} = \@arg;
+    return $self;
 }
 
 sub as_array {
-    my $self = shift;
-    map { [ $_->as_array ] } @{ $self->list };
+    my($self) = @_;
+    return map { [$_->as_array] } @{$self->list};
 }
 
 1;
@@ -38,11 +39,11 @@ Text::Diff3::List - a list of difference sets
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

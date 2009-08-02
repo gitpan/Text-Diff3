@@ -2,7 +2,7 @@ package Text::Diff3;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Text::Diff3::Factory;
 
@@ -23,13 +23,13 @@ Text::Diff3 - compute three-way differences between texts.
   my $original = $f->create_text([ map{chomp;$_} <F1> ]);
   my $yourtext = $f->create_text([ map{chomp;$_} <F2> ]);
   my $p = $f->create_diff3;
-  my $diff3 = $p->diff3( $mytext, $origial, $yourtext );
+  my $diff3 = $p->diff3($mytext, $origial, $yourtext);
   $diff3->each(sub{
-      my( $r ) = @_;
+      my($r) = @_;
       print $r->as_string, "\n";
-      print $mytext->as_string_at( $_ ) for $r->range0;
-      print $original->as_string_at( $_ ) for $r->range2;
-      print $yourtext->as_string_at( $_ ) for $r->range1;
+      print $mytext->as_string_range($r->range0);
+      print $original->as_string_range($r->range2);
+      print $yourtext->as_string_range($r->range1);
   });
 
 =head1 ABSTRACT
@@ -88,7 +88,7 @@ After the process, the receiver returns the list as difference sets.
   when 0: changes occured in my text ($text0).
   when 1: changes occured in your text ($text1).
   when 2: changes occured in original ($text2).
-  when 'A': confict!
+  when 'A': conflict!
   end
 
 Additionally, GNU diff3.c treats as conflict when delete lines both
@@ -103,11 +103,11 @@ Communications of the ACM, Vol. 21, No. 4, page 264, April 1978.
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

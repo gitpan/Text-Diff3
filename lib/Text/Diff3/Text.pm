@@ -3,56 +3,72 @@ package Text::Diff3::Text;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
-use base qw( Text::Diff3::ListMixin Text::Diff3::Base );
+use base qw(Text::Diff3::ListMixin Text::Diff3::Base);
 
-sub text { $_[0]->{text} }
-sub list { $_[0]->{text} } # interface to ListMixin
+sub text { return $_[0]->{text} }
+sub list { return $_[0]->{text} } # interface to ListMixin
 
-sub first_index { 1 }
+sub first_index { return 1 }
 
 sub last_index {
-   my $self = shift;
-   $#{ $self->{text} } + $self->first_index;
+   my($self) = @_;
+   return $#{$self->{text}} + $self->first_index;
 }
 
 sub range {
-    my $self = shift;
-    ( $self->first_index .. $self->last_index );
+    my($self) = @_;
+    return ($self->first_index .. $self->last_index);
 }
 
 sub at {
-    my( $self, $x ) = @_;
+    my($self, $x) = @_;
     $x -= $self->first_index;
-    $x < 0 ? undef : $x > $#{ $self->{text} } ? undef : $self->{text}[ $x ];
+    return $x < 0 || $x > $#{$self->{text}} ? undef : $self->{text}[$x];
+}
+
+sub as_string_range {
+    my($self, @range) = @_;
+    my $t = q{};
+    for (@range) {
+        my $line = $self->at($_);
+        if (defined $line) {
+            $t .= $line . "\n";
+        }
+    }
+    return $t;
 }
 
 sub as_string_at {
-    my( $self, $x ) = @_;
-    my $line = $self->at( $x );
-    defined( $line ) ? $line . "\n" : '';
+    my($self, $x) = @_;
+    my $line = $self->at($x);
+    return defined($line) ? $line . "\n" : '';
 }
 
 sub eq_at {
-    my( $self, $x, $other ) = @_;
-    my $this = $self->at( $x );
-    ! defined( $this ) && ! defined( $other ) and return 1;
-    ! defined( $this ) && defined( $other ) and return 0;
-    defined( $this ) && ! defined( $other ) and return 0;
-    $this eq $other;
+    my($self, $x, $other) = @_;
+    my $this = $self->at($x);
+    ! defined($this) && ! defined($other) and return 1;
+    ! defined($this) &&   defined($other) and return 0;
+      defined($this) && ! defined($other) and return 0;
+    return $this eq $other;
 }
 
 sub initialize {
-    my $self = shift;
-    $self->SUPER::initialize( @_ );
-    my( $f, $s ) = @_;
-    if ( ref( $s ) eq 'ARRAY' ) {
+    my($self, @arg) = @_;
+    $self->SUPER::initialize(@arg);
+    my($f, $s) = @arg;
+    if (ref $s eq 'ARRAY') {
         $self->{text} = $s;
     } else {
-        my $r = ref( $s ) ? $s : \$s;
-        $self->{text} = [ split /\n/, $$r ];
+        if (ref $s) {
+            $s = $$s;
+        }
+        chomp $s;
+        $self->{text} = [split /\n/, $s, -1];
     }
+    return $self;
 }
 
 1;
@@ -68,17 +84,19 @@ Text::Diff3::Text - line number scheme free text buffer
   use Text::Diff3;
   my $f = Text::Diff3::Factory->new;
   my $t0 = $f->create_text([ map{chomp;$_} <F0> ]); # do not dup internally.
-  my $t1 = $f->create_text( $string ); # make array references.
+  my $t1 = $f->create_text($string); # make array references.
   # follows four take same output.
-  print $_, "\n" for @{ $t0->text };
-  print $t0->as_string_at( $_ ) for $t0->range;
-  print $t0->as_string_at( $_ ) for $t0->first_index .. $t0->last_index;
-  for ( $t0->first_index .. $t0->last_index ) {
-      my $line = $t0->at( $_ );
-      print $line, "\n" if defined( $line );
+  print $_, "\n" for @{$t0->text};
+  print $t0->as_string_at($_) for $t0->range;
+  print $t0->as_string_range($t0->ragne);
+  print $t0->as_string_at($_) for $t0->first_index .. $t0->last_index;
+  print $t0->as_string_range($t0->first_index .. $t0->last_index);
+  for ($t0->first_index .. $t0->last_index) {
+      my $line = $t0->at($_);
+      print $line, "\n" if defined($line);
   }
   # string compare
-  if ( $t0->eq_at( $i, $string ) ) { .... }
+  if ($t0->eq_at($i, $string)) { .... }
   # get string size
   my $length = $t0->size;
   
@@ -146,11 +164,11 @@ This is short cut for comparison line and other string.
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

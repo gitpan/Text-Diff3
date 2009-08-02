@@ -3,9 +3,6 @@ Makefile.PL
 MANIFEST
 README
 META.yml
-merge.pl
-randam3.pl
-test.sh
 lib/Text/Diff3.pm
 lib/Text/Diff3/Factory.pm
 lib/Text/Diff3/Base.pm

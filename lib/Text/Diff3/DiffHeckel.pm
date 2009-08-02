@@ -3,69 +3,79 @@ package Text::Diff3::DiffHeckel;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
 
-use base qw( Text::Diff3::Base );
+our $VERSION = '0.07';
+
+use base qw(Text::Diff3::Base);
 
 sub diff {
-    my $self = shift;
-    my( $A, $B ) = @_;
+    my($self, $A, $B) = @_;
     my $f = $self->factory;
-    $A = $f->create_text( $A ) unless $self->_type_check( $A );
-    $B = $f->create_text( $B ) unless $self->_type_check( $B );
+    if (! $self->_is_a_text($A)) {
+        $A = $f->create_text($A);
+    }
+    if (! $self->_is_a_text($B)) {
+        $B = $f->create_text($B);
+    }
     my $diff = $f->create_list2;
     my @Auniq = (
-        [ $A->first_index - 1, $B->first_index - 1 ],
-        [ $A->last_index  + 1, $B->last_index  + 1 ]
+        [$A->first_index - 1, $B->first_index - 1],
+        [$A->last_index  + 1, $B->last_index  + 1]
     );
-    my( %Freq, %Ap, %Bp, $s, $x );
-    for $x ( $A->range ) {
-        $s = $A->at( $x ); $Freq{ $s } += 2; $Ap{ $s } = $x;
+    my(%Freq, %Ap, %Bp, $s, $x);
+    for $x ($A->range) {
+        $s = $A->at($x);
+        $Freq{$s} += 2;
+        $Ap{$s} = $x;
     }
-    for $x ( $B->range ) {
-        $s = $B->at( $x ); $Freq{ $s } += 3; $Bp{ $s } = $x;
+    for $x ($B->range) {
+        $s = $B->at($x);
+        $Freq{$s} += 3;
+        $Bp{$s} = $x;
     }
-    while ( ( $s, $x ) = each %Freq ) {
-        push @Auniq, [ $Ap{ $s }, $Bp{ $s } ] if $x == 5;
+    while (($s, $x) = each %Freq) {
+        push @Auniq, [$Ap{$s}, $Bp{$s}] if $x == 5;
     }
     @Auniq = sort { $$a[0] <=> $$b[0] } @Auniq;
-    my( $AL, $BL ) = ( $A->last_index,  $B->last_index );
-    my( $ax, $bx ) = ( $A->first_index, $B->first_index );
-    my( $an, $bn ) = ( $ax - 1, $bx - 1 );
-    while ( $ax <= $AL && $bx <= $BL && $A->eq_at( $ax, $B->at( $bx )) ) {
+    my($AL, $BL) = ($A->last_index,  $B->last_index);
+    my($ax, $bx) = ($A->first_index, $B->first_index);
+    my($an, $bn) = ($ax - 1, $bx - 1);
+    while ($ax <= $AL && $bx <= $BL && $A->eq_at($ax, $B->at($bx))) {
         $ax++; $bx++;
     }
-    my( $loA, $loB ) = ( $ax, $bx );
-    for ( @Auniq ) {
-        ( $an, $bn ) = @$_;
+    my($loA, $loB) = ($ax, $bx);
+    for (@Auniq) {
+        ($an, $bn) = @$_;
         next if $an < $loA || $bn < $loB;
-        ( $ax, $bx ) = ( $an - 1, $bn - 1 );
-        while ( $ax >= $loA && $bx >= $loB && $A->eq_at( $ax, $B->at( $bx )) ) {
-            $ax--; $bx--;
+        ($ax, $bx) = ($an - 1, $bn - 1);
+        while ($ax >= $loA && $bx >= $loB && $A->eq_at($ax, $B->at($bx))) {
+            $ax--;
+            $bx--;
         }
-        if ( $ax >= $loA && $bx >= $loB ) {
-            $diff->push( $f->create_range2( 'c', $loA, $ax, $loB, $bx ) );
-        } elsif ( $ax >= $loA ) {
-            $diff->push( $f->create_range2( 'd', $loA, $ax, $loB, $loB-1 ) );
-        } elsif ( $bx >= $loB ) {
-            $diff->push( $f->create_range2( 'a', $loA, $loA-1, $loB, $bx ) );
+        if ($ax >= $loA && $bx >= $loB) {
+            $diff->push($f->create_range2('c', $loA, $ax, $loB, $bx));
+        } elsif ($ax >= $loA) {
+            $diff->push($f->create_range2('d', $loA, $ax, $loB, $loB - 1));
+        } elsif ($bx >= $loB) {
+            $diff->push($f->create_range2('a', $loA, $loA - 1, $loB, $bx));
         }
-        ( $ax, $bx ) = ( $an + 1, $bn + 1 );
-        while ( $ax <= $AL && $bx <= $BL && $A->eq_at( $ax, $B->at( $bx )) ) {
-            $ax++; $bx++;
+        ($ax, $bx) = ($an + 1, $bn + 1);
+        while ($ax <= $AL && $bx <= $BL && $A->eq_at($ax, $B->at($bx))) {
+            $ax++;
+            $bx++;
         }
-        ( $loA, $loB ) = ( $ax, $bx );
+        ($loA, $loB) = ($ax, $bx);
     }
-    $diff;
+    return $diff;
 }
 
-sub _type_check {
-    my( $self, $x ) = @_;
-       UNIVERSAL::can( $x, 'first_index' )
-    && UNIVERSAL::can( $x, 'last_index' )
-    && UNIVERSAL::can( $x, 'range' )
-    && UNIVERSAL::can( $x, 'at' )
-    && UNIVERSAL::can( $x, 'eq_at' );
+sub _is_a_text {
+    my($self, $x) = @_;
+    return eval{ $x->can('first_index') }
+        && eval{ $x->can('last_index') }
+        && eval{ $x->can('range') }
+        && eval{ $x->can('at') }
+        && eval{ $x->can('eq_at') };
 }
 
 1;
@@ -81,17 +91,17 @@ Text::Diff3::DiffHeckel - two-way diff plug-in
   use Text::Diff3;
   my $f = Text::Diff3::Factory->new;
   my $p = $f->create_diff;
-  my $mytext   = $f->create_text([ map{chomp;$_} <F0> ]);
-  my $original = $f->create_text([ map{chomp;$_} <F1> ]);
-  my $diff2 = $p->diff( $origial, $mytext );
+  my $mytext   = $f->create_text([map {chomp; $_} <F0> ]);
+  my $original = $f->create_text([map {chomp; $_} <F1> ]);
+  my $diff2 = $p->diff($original, $mytext);
   $diff2->each(sub{
-      my( $r ) = @_;
+      my($r) = @_;
       print $r->as_string, "\n";
-      if ( $r->type ne 'd' ) {
-          print '-', $original->as_string_at( $_ ) for $r->rangeB;
+      if ($r->type ne 'a') { # delete or change
+          print '-', $mytext->as_string_at($_) for $r->rangeA;
       }
-      if ( $r->type ne 'a' ) {
-          print '+', $mytext->as_string_at( $_ ) for $r->rangeA;
+      if ($r->type ne 'd') { # append or change
+          print '+', $original->as_string_at($_) for $r->rangeB;
       }
   });
 
@@ -142,7 +152,7 @@ for the building diff processor.
 Performing the diff process, we send a `diff' message with two
 text instances to the receiver,
 
-  my $diff2 = $p->diff( $origial, $mytext );
+  my $diff2 = $p->diff($origial, $mytext);
 
 where the parameters of text are a kind as follows.
 
@@ -174,11 +184,11 @@ Text::Diff3::Diff3
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

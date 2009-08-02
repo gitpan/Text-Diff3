@@ -3,35 +3,42 @@ package Text::Diff3::Range3;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
-use base qw( Text::Diff3::Base );
+use base qw(Text::Diff3::Base);
 
-__PACKAGE__->mk_attr_accessor( qw( type lo0 hi0 lo1 hi1 lo2 hi2 ) );
+__PACKAGE__->mk_attr_accessor(qw(type lo0 hi0 lo1 hi1 lo2 hi2));
 
 sub as_array {
-    my $self = shift;
-    @{ $self }{ qw( type lo0 hi0 lo1 hi1 lo2 hi2 ) };
+    my($self) = @_;
+    return @{$self}{qw(type lo0 hi0 lo1 hi1 lo2 hi2)};
 }
 
 sub as_string {
-    my $self = shift;
-    sprintf "%s %d,%d %d,%d %d,%d",
-        @{ $self }{ qw( type lo0 hi0 lo1 hi1 lo2 hi2 ) };
+    my($self) = @_;
+    return sprintf "%s %d,%d %d,%d %d,%d",
+        @{$self}{qw( type lo0 hi0 lo1 hi1 lo2 hi2 )};
 }
 
-sub set_type_diff0 { $_[0]->type( 0 ); $_[0] }
-sub set_type_diff1 { $_[0]->type( 1 ); $_[0] }
-sub set_type_diff2 { $_[0]->type( 2 ); $_[0] }
-sub set_type_diffA { $_[0]->type( 'A' ); $_[0] }
-sub range0 { ( $_[0]->lo0 .. $_[0]->hi0 ) }
-sub range1 { ( $_[0]->lo1 .. $_[0]->hi1 ) }
-sub range2 { ( $_[0]->lo2 .. $_[0]->hi2 ) }
+sub set_type_diff0 { shift->set_type('0') }
+sub set_type_diff1 { shift->set_type('1') }
+sub set_type_diff2 { shift->set_type('2') }
+sub set_type_diffA { shift->set_type('A') }
+sub range0 { return ($_[0]->lo0 .. $_[0]->hi0) }
+sub range1 { return ($_[0]->lo1 .. $_[0]->hi1) }
+sub range2 { return ($_[0]->lo2 .. $_[0]->hi2) }
+
+sub set_type {
+    my($self, $x) = @_;
+    $self->{type} = $x;
+    return $self;
+}
 
 sub initialize {
-    my $self = shift;
-    $self->SUPER::initialize( @_ );
-    @{ $self }{ qw( type lo0 hi0 lo1 hi1 lo2 hi2 ) } = @_[1..7];
+    my($self, @arg) = @_;
+    $self->SUPER::initialize(@arg);
+    @{$self}{qw(type lo0 hi0 lo1 hi1 lo2 hi2)} = @arg[1 .. 7];
+    return $self;
 }
 
 1;
@@ -46,7 +53,7 @@ Text::Diff3::Range3 - three-way difference container
 
   use Text::Diff3;
   my $f = Text::Diff3::Factory;
-  my $range3 = $f->create_range3( 1, 2,3, 4,5, 6,7 );
+  my $range3 = $f->create_range3(1, 2,3, 4,5, 6,7);
   $type = $range3->type;    # 1
   $line_no = $range3->lo0;  # 2
   $line_no = $range3->hi0;  # 3
@@ -58,11 +65,11 @@ Text::Diff3::Range3 - three-way difference container
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

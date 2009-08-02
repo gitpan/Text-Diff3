@@ -3,7 +3,7 @@ package Text::Diff3::Factory;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Text::Diff3::Diff3;
 use Text::Diff3::DiffHeckel;
@@ -12,23 +12,23 @@ use Text::Diff3::Range2;
 use Text::Diff3::Range3;
 use Text::Diff3::List;
 
-sub create_test { Text::Diff3::Base->new( @_ ) }
+sub create_test { Text::Diff3::Base->new(@_) }
 # for user
 sub new { $_[0] }
-sub create_text { Text::Diff3::Text->new( @_ ) }
-sub create_diff3 { Text::Diff3::Diff3->new( @_ ) }
-sub create_diff { Text::Diff3::DiffHeckel->new( @_ ) }
+sub create_text { Text::Diff3::Text->new(@_) }
+sub create_diff3 { Text::Diff3::Diff3->new(@_) }
+sub create_diff { Text::Diff3::DiffHeckel->new(@_) }
 
 # for internally
-sub create_list3 { Text::Diff3::List->new( @_ ) }
+sub create_list3 { Text::Diff3::List->new(@_) }
 # Text::Diff3::Range3 included in Text::Diff3::Range3List
-sub create_range3 { Text::Diff3::Range3->new( @_ ) }
+sub create_range3 { Text::Diff3::Range3->new(@_) }
 sub create_null_range3 {
-    Text::Diff3::Range3->new( $_[0], undef, 0,0, 0,0, 0,0 )
+    Text::Diff3::Range3->new($_[0], undef, 0,0, 0,0, 0,0)
 }
-sub create_list2 { Text::Diff3::List->new( @_ ) }
+sub create_list2 { Text::Diff3::List->new(@_) }
 # Text::Diff3::Range2 included in Text::Diff3::Range2List
-sub create_range2 { Text::Diff3::Range2->new( @_ ) }
+sub create_range2 { Text::Diff3::Range2->new(@_) }
 
 1;
 
@@ -93,11 +93,11 @@ Create a two-way diff range container (internally used).
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -3,68 +3,76 @@ package Text::Diff3::Diff3;
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
-use base qw( Text::Diff3::Base );
+use base qw(Text::Diff3::Base);
 
 # the three-way diff procedure based on the GNU diff3.c by Randy Smith.
 sub diff3 {
-    my $self = shift;
-    my( $text0, $text2, $text1 ) = @_;
+    my($self, $text0, $text2, $text1) = @_;
     my $f = $self->factory;
-    $text0 = $f->create_text( $text0 ) unless $self->_type_check( $text0 );
-    $text2 = $f->create_text( $text2 ) unless $self->_type_check( $text2 );
-    $text1 = $f->create_text( $text1 ) unless $self->_type_check( $text1 );
+    if (! $self->_is_a_text($text0)) {
+        $text0 = $f->create_text($text0);
+    }
+    if (! $self->_is_a_text($text2)) {
+        $text0 = $f->create_text($text2);
+    }
+    if (! $self->_is_a_text($text1)) {
+        $text0 = $f->create_text($text1);
+    }
     my $diffp = $f->create_diff;
-    my @diff2;
-    $diff2[0] = $diffp->diff( $text2, $text0 );
-    $diff2[1] = $diffp->diff( $text2, $text1 );
+    my @diff2 = (
+        $diffp->diff($text2, $text0),
+        $diffp->diff($text2, $text1),
+    );
     my $diff3 = $f->create_list3;
     my $range3 = $f->create_null_range3;
-    until ( $diff2[0]->is_empty && $diff2[1]->is_empty ) {
+    while (! $diff2[0]->is_empty || ! $diff2[1]->is_empty) {
         # find a continual range in text2 $lo2..$hi2
         # changed by text0 or by text1.
         #
-        #  diff02     222    222222222
-        #   text2  ...l!!!!!!!!!!!!!!!!!!!!h...
-        #  diff12       222222   22  2222222
-        my @range2 = ( [], [] );
-        my $i = my $j = $diff2[0]->is_empty ? 1 : $diff2[1]->is_empty ? 0 :
-            $diff2[0]->first->loA <= $diff2[1]->first->loA ? 0 : 1;
-        my $k = $j ^ 1;
-        my $hi = $diff2[ $j ]->first->hiA;
-        push @{ $range2[ $j ] }, $diff2[ $j ]->shift;
-        while ( ! $diff2[ $k ]->is_empty
-               && $diff2[ $k ]->first->loA <= $hi + 1
-        ) {
-            my $hi_k = $diff2[ $k ]->first->hiA;
-            push @{ $range2[ $k ] }, $diff2[ $k ]->shift;
-            if ( $hi < $hi_k ) {
+        #  diff2[0]     222    222222222
+        #     text2  ...L!!!!!!!!!!!!!!!!!!!!H...
+        #  diff2[1]       222222   22  2222222
+        my @range2 = ([], []);
+        my $i =
+              $diff2[0]->is_empty ? 1
+            : $diff2[1]->is_empty ? 0
+            : $diff2[0]->first->loA <= $diff2[1]->first->loA ? 0
+            : 1;
+        my $j = $i;
+        my $k = $i ^ 1;
+        my $hi = $diff2[$j]->first->hiA;
+        push @{$range2[$j]}, $diff2[$j]->shift;
+        while (! $diff2[$k]->is_empty && $diff2[$k]->first->loA <= $hi + 1) {
+            my $hi_k = $diff2[$k]->first->hiA;
+            push @{$range2[$k]}, $diff2[$k]->shift;
+            if ($hi < $hi_k) {
                 $hi = $hi_k;
                 $j = $k;
-                $k = $j ^ 1;
+                $k = $k ^ 1;
             }
         }
-        my $lo2 = $range2[ $i ][ 0]->loA;
-        my $hi2 = $range2[ $j ][-1]->hiA;
-        # take the corresponding ranges in text0 $lo0..$lo1
+        my $lo2 = $range2[$i][ 0]->loA;
+        my $hi2 = $range2[$j][-1]->hiA;
+        # take the corresponding ranges in text0 $lo0..$hi0
         # and in text1 $lo1..$hi1.
         #
-        #   text0     l!!!!!!!!!!!!!!!!!!!!!!!11111h...
-        #  diff02     222    222222222
-        #   text2  ...00!1111!000!!00!111111...
-        #  diff12       222222   22  2222222
-        #   text1     l0!!!!!!!!!!!!!!!!!h...
-        my( $lo0, $hi0 );
-        if ( @{ $range2[0] } ) {
+        #     text0  ..L!!!!!!!!!!!!!!!!!!!!!!!!!!!!H...
+        #  diff2[0]     222    222222222
+        #     text2  ...00!1111!000!!00!111111...
+        #  diff2[1]       222222   22  2222222
+        #     text1       ...L!!!!!!!!!!!!!!!!H...
+        my($lo0, $hi0);
+        if (@{$range2[0]}) {
             $lo0 = $range2[0][ 0]->loB - $range2[0][ 0]->loA + $lo2;
             $hi0 = $range2[0][-1]->hiB - $range2[0][-1]->hiA + $hi2;
         } else {
             $lo0 = $range3->hi0 - $range3->hi2 + $lo2;
             $hi0 = $range3->hi0 - $range3->hi2 + $hi2;
         }
-        my( $lo1, $hi1 );
-        if ( @{ $range2[1] } ) {
+        my($lo1, $hi1);
+        if (@{$range2[1]}) {
             $lo1 = $range2[1][ 0]->loB - $range2[1][ 0]->loA + $lo2;
             $hi1 = $range2[1][-1]->hiB - $range2[1][-1]->hiA + $hi2;
         } else {
@@ -72,31 +80,32 @@ sub diff3 {
             $hi1 = $range3->hi1 - $range3->hi2 + $hi2;
         }
         $range3 = $f->create_range3(
-            undef, $lo0, $hi0, $lo1, $hi1, $lo2, $hi2 );
+            undef, $lo0, $hi0, $lo1, $hi1, $lo2, $hi2
+        );
         # detect type of changes.
-        if ( ! @{ $range2[0] } ) {
-            $range3->set_type_diff1;
-        } elsif ( ! @{ $range2[1] } ) {
-            $range3->set_type_diff0;
-        } elsif ( $hi0 - $lo0 != $hi1 - $lo1 ) {
-            $range3->set_type_diffA;
+        if (! @{$range2[0]}) {
+            $range3->type('1');
+        } elsif (! @{$range2[1]}) {
+            $range3->type('0');
+        } elsif ($hi0 - $lo0 != $hi1 - $lo1) {
+            $range3->type('A');
         } else {
-            $range3->set_type_diff2;
-            for ( ; $lo0 <= $hi0; ++$lo0, ++$lo1 ) {
-                unless ( $text0->eq_at( $lo0, $text1->at( $lo1 ) ) ) {
-                    $range3->set_type_diffA;
+            $range3->type('2');
+            for my $d (0 .. $hi0 - $lo0) {
+                if (! $text0->eq_at($lo0 + $d, $text1->at($lo1 + $d))) {
+                    $range3->type('A');
                     last;
                 }
             }
         }
-        $diff3->push( $range3 );
+        $diff3->push($range3);
     }
-    $diff3;
+    return $diff3;
 }
 
-sub _type_check {
-    my( $self, $x ) = @_;
-    UNIVERSAL::can( $x, 'at' ) && UNIVERSAL::can( $x, 'eq_at' );
+sub _is_a_text {
+    my($self, $x) = @_;
+    return eval{ $x->can('at') } && eval{ $x->can('eq_at') };
 }
 
 1;
@@ -111,11 +120,11 @@ Text::Diff3::Diff3 - diff3 plug-in
 
   use Text::Diff3;
   my $f = Text::Diff3::Factory->new;
-  my $mytext   = $f->create_text([ map{chomp;$_} <F0> ]);
-  my $original = $f->create_text([ map{chomp;$_} <F1> ]);
-  my $yourtext = $f->create_text([ map{chomp;$_} <F2> ]);
+  my $mytext   = $f->create_text([map{chomp; $_} <F0>]);
+  my $original = $f->create_text([map{chomp; $_} <F1>]);
+  my $yourtext = $f->create_text([map{chomp; $_} <F2>]);
   my $p = $f->create_diff3;
-  my $diff3 = $p->diff3( $mytext, $origial, $yourtext );
+  my $diff3 = $p->diff3($mytext, $origial, $yourtext);
 
 =head1 ABSTRACT
 
@@ -174,11 +183,11 @@ Text::Diff3
 
 =head1 AUTHOR
 
-MIZUTANI Tociyuki E<lt>tociyuki@gmail.comE<gt>
+MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 MIZUTANI Tociyuki
+Copyright (C) 2009 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
