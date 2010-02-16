@@ -1,14 +1,15 @@
 --- #YAML:1.0
 name:               Text-Diff3
-version:            0.07
-abstract:           compute three-way differences between texts.
+version:            0.08
+abstract:           three way text comparison and merging.
 author:
     - MIZUTANI Tociyuki <tociyuki@gmail.com>
 license:            unknown
 distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
-requires:  {}
+requires:
+    Test::Base:  0
 no_index:
     directory:
         - t

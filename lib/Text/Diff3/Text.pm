@@ -1,11 +1,11 @@
 package Text::Diff3::Text;
-# a line number scheme free text buffer
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.07';
-
 use base qw(Text::Diff3::ListMixin Text::Diff3::Base);
+
+use version; our $VERSION = '0.08';
+our $RCS_ID = q{$Id: Text.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 sub text { return $_[0]->{text} }
 sub list { return $_[0]->{text} } # interface to ListMixin
@@ -43,16 +43,14 @@ sub as_string_range {
 sub as_string_at {
     my($self, $x) = @_;
     my $line = $self->at($x);
-    return defined($line) ? $line . "\n" : '';
+    return defined($line) ? $line . "\n" : q{};
 }
 
 sub eq_at {
     my($self, $x, $other) = @_;
     my $this = $self->at($x);
-    ! defined($this) && ! defined($other) and return 1;
-    ! defined($this) &&   defined($other) and return 0;
-      defined($this) && ! defined($other) and return 0;
-    return $this eq $other;
+    return 0 if (defined $this) ^ (defined $other);
+    return ! (defined $this) || $this eq $other;
 }
 
 sub initialize {
@@ -63,10 +61,10 @@ sub initialize {
         $self->{text} = $s;
     } else {
         if (ref $s) {
-            $s = $$s;
+            $s = ${$s};
         }
         chomp $s;
-        $self->{text} = [split /\n/, $s, -1];
+        $self->{text} = [split /\n/msx, $s, -1];
     }
     return $self;
 }
@@ -75,32 +73,38 @@ sub initialize {
 
 __END__
 
+=pod
+
 =head1 NAME
 
 Text::Diff3::Text - line number scheme free text buffer
 
+=head1 VERSION
+
+0.08
+
 =head1 SYNOPSIS
 
-  use Text::Diff3;
-  my $f = Text::Diff3::Factory->new;
-  my $t0 = $f->create_text([ map{chomp;$_} <F0> ]); # do not dup internally.
-  my $t1 = $f->create_text($string); # make array references.
-  # follows four take same output.
-  print $_, "\n" for @{$t0->text};
-  print $t0->as_string_at($_) for $t0->range;
-  print $t0->as_string_range($t0->ragne);
-  print $t0->as_string_at($_) for $t0->first_index .. $t0->last_index;
-  print $t0->as_string_range($t0->first_index .. $t0->last_index);
-  for ($t0->first_index .. $t0->last_index) {
-      my $line = $t0->at($_);
-      print $line, "\n" if defined($line);
-  }
-  # string compare
-  if ($t0->eq_at($i, $string)) { .... }
-  # get string size
-  my $length = $t0->size;
-  
-=head1 ABSTRACT
+    use Text::Diff3;
+    my $f = Text::Diff3::Factory->new;
+    my $t0 = $f->create_text([ map{chomp;$_} <F0> ]); # do not dup internally.
+    my $t1 = $f->create_text($string); # make array references.
+    # follows four take same output.
+    print $_, "\n" for @{$t0->text};
+    print $t0->as_string_at($_) for $t0->range;
+    print $t0->as_string_range($t0->ragne);
+    print $t0->as_string_at($_) for $t0->first_index .. $t0->last_index;
+    print $t0->as_string_range($t0->first_index .. $t0->last_index);
+    for ($t0->first_index .. $t0->last_index) {
+        my $line = $t0->at($_);
+        print $line, "\n" if defined($line);
+    }
+    # string compare
+    if ($t0->eq_at($i, $string)) { .... }
+    # get string size
+    my $length = $t0->size;
+
+=head1 DESCRIPTION
 
 This is a wrapper for a Perl's array reference, improving line number
 scheme free and limiting fetching from last element by minus index.
@@ -108,9 +112,9 @@ Normally line number starts 1 in compatible with diff command tools.
 But you can change it another value like as 0 override first index
 methods.
 
-=head1 DESCRIPTION
+=over
 
-=head2 create
+=item create
 
 Author recommends you to create an instance of text by using with
 a factory as follows.
@@ -127,48 +131,64 @@ When pass an array reference, it simply assigned text properties
 without duplication. In the later case, the side effects will happen
 if you use same reference at another place.
 
-=head2 text
+=item C<< $obj->text >>
 
-This is a property of the line buffer. It is an array reference.
+Returns the line buffer attribute. It is an array reference.
 
-=head2 list
+=item C<< $obj->list >>
 
-This is same as the text property, which is an interface property
+Same as the text property, which is an interface property
 for ListMixin.
 
-=head2 first_index
+=item C<< $obj->first_index >>
 
-This is first-index accessible by the `at' method.
+Returns first-index accessible by the `at' method.
 
-=head2 last_index
+=item C<< $obj->last_index >>
 
-This is last-index accessible by the `at' method.
+Returns last-index accessible by the `at' method.
 
-=head2 range
+=item C<< $obj->range >>
 
-This returns a range between fist-index and last-index.
+Returns a range between fist-index and last-index.
 
-=head2 at
+=item C<< $obj->at >>
 
-This returns a line specified by a line number.
+Returns a line specified by a line number.
 If line number is out of range, it returns undef.
 
-=head2 as_string_at
+=item C<< $obj->as_string_at($x) >>
 
 This is short cut for line accessing through `at'.
 If line number is out of range, it returns '', in otherwise returns line."\n".
 
-=head2 eq_at
+=item C<< $obj->as_string_range(@range) >>
+
+Contatinents lines in the given line number array.
+
+=item C<< $obj->eq_at($x, $other) >>
 
 This is short cut for comparison line and other string.
+
+=item C<< $obj->initialize >>
+
+Makes initial state.
+
+=back
+
+=head1 COMPATIBILITY
+
+Use new function style interfaces introduced from version 0.08.
+This module remained for backward compatibility before version 0.07.
+This module is no longer maintenance after version 0.08.
 
 =head1 AUTHOR
 
 MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2009 MIZUTANI Tociyuki
+Copyright (C) 2010 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -176,3 +196,4 @@ the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
 =cut
+

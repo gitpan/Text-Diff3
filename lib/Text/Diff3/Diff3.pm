@@ -1,11 +1,13 @@
 package Text::Diff3::Diff3;
-# diff3 plug-in
+# diff3 component
 use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.07';
 
 use base qw(Text::Diff3::Base);
+
+use version; our $VERSION = '0.08';
+our $RCS_ID = q{$Id: Diff3.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 # the three-way diff procedure based on the GNU diff3.c by Randy Smith.
 sub diff3 {
@@ -112,31 +114,44 @@ sub _is_a_text {
 
 __END__
 
+=pod
+
 =head1 NAME
 
-Text::Diff3::Diff3 - diff3 plug-in
+Text::Diff3::Diff3 - diff3 component
 
-=head1 SYNOPSYS
+=head1 VERSION
 
-  use Text::Diff3;
-  my $f = Text::Diff3::Factory->new;
-  my $mytext   = $f->create_text([map{chomp; $_} <F0>]);
-  my $original = $f->create_text([map{chomp; $_} <F1>]);
-  my $yourtext = $f->create_text([map{chomp; $_} <F2>]);
-  my $p = $f->create_diff3;
-  my $diff3 = $p->diff3($mytext, $origial, $yourtext);
+0.08
 
-=head1 ABSTRACT
+=head1 SYNOPSIS
 
-This is a plug-in to compute difference sets between three text
-buffers ported from GNU diff3.c written by Randy Smith.
+    use Text::Diff3;
+    my $f = Text::Diff3::Factory->new;
+    my $mytext   = $f->create_text([map{chomp; $_} <F0>]);
+    my $original = $f->create_text([map{chomp; $_} <F1>]);
+    my $yourtext = $f->create_text([map{chomp; $_} <F2>]);
+    my $p = $f->create_diff3;
+    my $diff3 = $p->diff3($mytext, $origial, $yourtext);
 
 =head1 DESCRIPTION
 
-Please see how to use this plug-in through a factory in a Text::Diff3
-document.
+This is a component to compute difference sets between three text
+buffers ported from GNU diff3.c written by Randy Smith.
 
-=head1 WORK WITH diff
+=head1 METHODS
+
+=over
+
+=item C<< $p->diff3($mytext, $origial, $yourtext) >>
+
+calcurates three way diffences between instances of Text::Diff3::Text.
+This returns an instance of Text::Diff3::List
+including instances of Text::Diff3::Range3.
+
+=back
+
+=head1 WORK WITH diff(1)
 
 Diff3 processor needs to support of a two-way diff plug-in module.
 There are two requirements for a diff plug-in module.
@@ -170,7 +185,6 @@ Their line numbers are normally dropped in the diff(1) command.
 So that you do their modifications simply adding success value
 from the output one if you make a plug-in diff(1) command invoker.
 
-
 =head1 SEE ALSO
 
 GNU/diffutils/2.7/diff3.c
@@ -179,15 +193,22 @@ GNU/diffutils/2.7/diff3.c
    Copyright (C) 1988, 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
    Written by Randy Smith
 
-Text::Diff3
+L<Text::Diff3::Factory>,
+L<Text::Diff3::Text>, L<Text::Diff3::List>, L<Text::Diff3::Range3>
+
+=head1 COMPATIBILITY
+
+Use new function style interfaces introduced from version 0.08.
+This module remained for backward compatibility before version 0.07.
+This module is no longer maintenance after version 0.08.
 
 =head1 AUTHOR
 
 MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2009 MIZUTANI Tociyuki
+Copyright (C) 2010 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -195,3 +216,4 @@ the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
 =cut
+

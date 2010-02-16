@@ -3,10 +3,10 @@ package Text::Diff3::DiffHeckel;
 use 5.006;
 use strict;
 use warnings;
-
-our $VERSION = '0.07';
-
 use base qw(Text::Diff3::Base);
+
+use version; our $VERSION = '0.08';
+our $RCS_ID = q{$Id: DiffHeckel.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 sub diff {
     my($self, $A, $B) = @_;
@@ -18,53 +18,54 @@ sub diff {
         $B = $f->create_text($B);
     }
     my $diff = $f->create_list2;
-    my @Auniq = (
+    my @uniq = (
         [$A->first_index - 1, $B->first_index - 1],
         [$A->last_index  + 1, $B->last_index  + 1]
     );
-    my(%Freq, %Ap, %Bp, $s, $x);
-    for $x ($A->range) {
-        $s = $A->at($x);
-        $Freq{$s} += 2;
-        $Ap{$s} = $x;
+    my(%freq, %ap, %bp);
+    for my $lineno ($A->range) {
+        my $s = $A->at($lineno);
+        $freq{$s} += 2;
+        $ap{$s} = $lineno;
     }
-    for $x ($B->range) {
-        $s = $B->at($x);
-        $Freq{$s} += 3;
-        $Bp{$s} = $x;
+    for my $lineno ($B->range) {
+        my $s = $B->at($lineno);
+        $freq{$s} += 3;
+        $bp{$s} = $lineno;
     }
-    while (($s, $x) = each %Freq) {
-        push @Auniq, [$Ap{$s}, $Bp{$s}] if $x == 5;
+    while (my($s, $x) = each %freq) {
+        next if $x != 5;
+        push @uniq, [$ap{$s}, $bp{$s}];
     }
-    @Auniq = sort { $$a[0] <=> $$b[0] } @Auniq;
+    @uniq = sort { $a->[0] <=> $b->[0] } @uniq;
     my($AL, $BL) = ($A->last_index,  $B->last_index);
-    my($ax, $bx) = ($A->first_index, $B->first_index);
-    my($an, $bn) = ($ax - 1, $bx - 1);
-    while ($ax <= $AL && $bx <= $BL && $A->eq_at($ax, $B->at($bx))) {
-        $ax++; $bx++;
+    my($a1, $b1) = ($A->first_index, $B->first_index);
+    while ($a1 <= $AL && $b1 <= $BL && $A->eq_at($a1, $B->at($b1))) {
+        $a1++;
+        $b1++;
     }
-    my($loA, $loB) = ($ax, $bx);
-    for (@Auniq) {
-        ($an, $bn) = @$_;
-        next if $an < $loA || $bn < $loB;
-        ($ax, $bx) = ($an - 1, $bn - 1);
-        while ($ax >= $loA && $bx >= $loB && $A->eq_at($ax, $B->at($bx))) {
-            $ax--;
-            $bx--;
+    my($a0, $b0) = ($a1, $b1);
+    for (@uniq) {
+        my($auniq, $buniq) = @{$_};
+        next if $auniq < $a0 || $buniq < $b0;
+        ($a1, $b1) = ($auniq - 1, $buniq - 1);
+        while ($a0 <= $a1 && $b0 <= $b1 && $A->eq_at($a1, $B->at($b1))) {
+            $a1--;
+            $b1--;
         }
-        if ($ax >= $loA && $bx >= $loB) {
-            $diff->push($f->create_range2('c', $loA, $ax, $loB, $bx));
-        } elsif ($ax >= $loA) {
-            $diff->push($f->create_range2('d', $loA, $ax, $loB, $loB - 1));
-        } elsif ($bx >= $loB) {
-            $diff->push($f->create_range2('a', $loA, $loA - 1, $loB, $bx));
+        if ($a0 <= $a1 && $b0 <= $b1) {
+            $diff->push($f->create_range2('c', $a0, $a1, $b0, $b1));
+        } elsif ($a0 <= $a1) {
+            $diff->push($f->create_range2('d', $a0, $a1, $b0, $b0 - 1));
+        } elsif ($b0 <= $b1) {
+            $diff->push($f->create_range2('a', $a0, $a0 - 1, $b0, $b1));
         }
-        ($ax, $bx) = ($an + 1, $bn + 1);
-        while ($ax <= $AL && $bx <= $BL && $A->eq_at($ax, $B->at($bx))) {
-            $ax++;
-            $bx++;
+        ($a1, $b1) = ($auniq + 1, $buniq + 1);
+        while ($a1 <= $AL && $b1 <= $BL && $A->eq_at($a1, $B->at($b1))) {
+            $a1++;
+            $b1++;
         }
-        ($loA, $loB) = ($ax, $bx);
+        ($a0, $b0) = ($a1, $b1);
     }
     return $diff;
 }
@@ -81,10 +82,15 @@ sub _is_a_text {
 1;
 
 __END__
+=pod
 
 =head1 NAME
 
-Text::Diff3::DiffHeckel - two-way diff plug-in
+Text::Diff3::DiffHeckel - two-way diff component
+
+=head1 VERSION
+
+0.08
 
 =head1 SYNOPSIS
 
@@ -98,21 +104,19 @@ Text::Diff3::DiffHeckel - two-way diff plug-in
       my($r) = @_;
       print $r->as_string, "\n";
       if ($r->type ne 'a') { # delete or change
-          print '-', $mytext->as_string_at($_) for $r->rangeA;
+          print '-', $original->as_string_at($_) for $r->rangeA;
       }
       if ($r->type ne 'd') { # append or change
-          print '+', $original->as_string_at($_) for $r->rangeB;
+          print '+', $mytext->as_string_at($_) for $r->rangeB;
       }
   });
 
-=head1 ABSTRACT
+=head1 DESCRIPTION
 
 This is a package for Text::Diff3 to compute difference sets between
 two text buffers based on the P. Heckel's algorithm.
 Anyone may change this to an another diff or a its wrapper module
 by a your custom Factory instance.
-
-=head1 DESCRIPTION
 
 Text::Diff3 needs a support of computing difference sets between
 two text buffers (diff). As the diff(1) command, the required diff
@@ -134,8 +138,11 @@ generate almost same results for small local changes in the text.
 In some cases, such as moving blocks of lines, it happened quite
 differences in results.
 
+=head1 METHODS
 
-=head2 create
+=over
+
+=item C<< $f->create_diff >>
 
 Author recommends you to create an instance of diff processor
 by using with a factory as follows.
@@ -147,7 +154,7 @@ by using with a factory as follows.
 Text::Diff3::Factory is a class to packaging several classes
 for the building diff processor.
 
-=head2 diff
+=item C<< $p->diff($origial, $mytext) >>
 
 Performing the diff process, we send a `diff' message with two
 text instances to the receiver,
@@ -175,6 +182,8 @@ type as one.
 
 After the process, the receiver returns the list as difference sets.
 
+=back
+
 =head1 SEE ALSO
 
 P. Heckel. ``A technique for isolating differences between files.''
@@ -182,13 +191,19 @@ Communications of the ACM, Vol. 21, No. 4, page 264, April 1978.
 
 Text::Diff3::Diff3
 
+=head1 COMPATIBILITY
+
+Use new function style interfaces introduced from version 0.08.
+This module remained for backward compatibility before version 0.07.
+This module is no longer maintenance after version 0.08.
+
 =head1 AUTHOR
 
 MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2009 MIZUTANI Tociyuki
+Copyright (C) 2010 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -196,3 +211,4 @@ the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
 =cut
+
