@@ -1,5 +1,10 @@
 Revision history for Perl extension Text::Diff3.
 
+0.09  Wed Feb  2 04:54:49 2011 UTC
+    - _heckel_diff() uses index of array directly.
+    - delete _eq() function.
+    - fix bad SYNOPSIS.
+
 0.08  Tue Feb 16 15:24:52 2010 JST
     - Add function style diff3, merge, and diff subroutines.
     - Change to use Test::Base.

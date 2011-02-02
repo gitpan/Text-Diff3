@@ -3,8 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 
-use version; our $VERSION = '0.08';
-our $RCSID = q{$Id: Diff3.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
+use version; our $VERSION = '0.09';
 
 our @EXPORT_OK = qw(diff3 merge diff);
 
@@ -119,7 +118,10 @@ sub diff3 {
         else {
             $range3->[0] = '2';
             for my $d (0 .. $hi0 - $lo0) {
-                if (! _eq($text0, $lo0 + $d, $text1, $lo1 + $d)) {
+                my($i0, $i1) = ($lo0 + $d - 1, $lo1 + $d - 1);
+                my $ok0 = 0 <= $i0 && $i0 < $#{$text0};
+                my $ok1 = 0 <= $i1 && $i1 < $#{$text1};
+                if ($ok0 ^ $ok1 || ($ok0 && $text0->[$i0] ne $text1->[$i1])) {
                     $range3->[0] = 'A';
                     last;
                 }
@@ -225,67 +227,59 @@ sub _assoc_range {
 
 # the two-way diff based on the algorithm by P. Heckel.
 sub _diff_heckel {
-    my($A, $B) = @_;
+    my($text_a, $text_b) = @_;
     my $diff = [];
-    my @uniq = ([0, 0], [$#{$A} + 2, $#{$B} + 2]);
+    my @uniq = ([$#{$text_a} + 1, $#{$text_b} + 1]);
     my(%freq, %ap, %bp);
-    for my $lineno (1 .. $#{$A} + 1) {
-        my $s = $A->[$lineno - 1];
+    for my $i (0 .. $#{$text_a}) {
+        my $s = $text_a->[$i];
         $freq{$s} += 2;
-        $ap{$s} = $lineno;
+        $ap{$s} = $i;
     }
-    for my $lineno (1 .. $#{$B} + 1) {
-        my $s = $B->[$lineno - 1];
+    for my $i (0 .. $#{$text_b}) {
+        my $s = $text_b->[$i];
         $freq{$s} += 3;
-        $bp{$s} = $lineno;
+        $bp{$s} = $i;
     }
     while (my($s, $x) = each %freq) {
         next if $x != 5;
         push @uniq, [$ap{$s}, $bp{$s}];
     }
+    %freq = (); %ap = (); %bp = ();
     @uniq = sort { $a->[0] <=> $b->[0] } @uniq;
-    my($a1, $b1) = (1, 1);
-    while ($a1 <= @{$A} && $b1 <= @{$B} && _eq($A, $a1, $B, $b1)) {
-        $a1++;
-        $b1++;
+    my($a1, $b1) = (0, 0);
+    while ($a1 <= $#{$text_a} && $b1 <= $#{$text_b}) {
+        last if $text_a->[$a1] ne $text_b->[$b1];
+        ++$a1;
+        ++$b1;
     }
-    my($a0, $b0) = ($a1, $b1);
     for (@uniq) {
-        my($auniq, $buniq) = @{$_};
-        next if $auniq < $a0 || $buniq < $b0;
-        ($a1, $b1) = ($auniq - 1, $buniq - 1);
-        while ($a0 <= $a1 && $b0 <= $b1 && _eq($A, $a1, $B, $b1)) {
-            $a1--;
-            $b1--;
+        my($a_uniq, $b_uniq) = @{$_};
+        next if $a_uniq < $a1 || $b_uniq < $b1;
+        my($a0, $b0) = ($a1, $b1);
+        ($a1, $b1) = ($a_uniq - 1, $b_uniq - 1);
+        while ($a0 <= $a1 && $b0 <= $b1) {
+            last if $text_a->[$a1] ne $text_b->[$b1];
+            --$a1;
+            --$b1;
         }
         if ($a0 <= $a1 && $b0 <= $b1) {
-            push @{$diff}, ['c', $a0, $a1, $b0, $b1];
+            push @{$diff}, ['c', $a0 + 1, $a1 + 1, $b0 + 1, $b1 + 1];
         }
         elsif ($a0 <= $a1) {
-            push @{$diff}, ['d', $a0, $a1, $b0, $b0 - 1];
+            push @{$diff}, ['d', $a0 + 1, $a1 + 1, $b0 + 1, $b0];
         }
         elsif ($b0 <= $b1) {
-            push @{$diff}, ['a', $a0, $a0 - 1, $b0, $b1];
+            push @{$diff}, ['a', $a0 + 1, $a0, $b0 + 1, $b1 + 1];
         }
-        ($a1, $b1) = ($auniq + 1, $buniq + 1);
-        while ($a1 <= @{$A} && $b1 <= @{$B} && _eq($A, $a1, $B, $b1)) {
-            $a1++;
-            $b1++;
+        ($a1, $b1) = ($a_uniq + 1, $b_uniq + 1);
+        while ($a1 <= $#{$text_a} && $b1 <= $#{$text_b}) {
+            last if $text_a->[$a1] ne $text_b->[$b1];
+            ++$a1;
+            ++$b1;
         }
-        ($a0, $b0) = ($a1, $b1);
     }
     return $diff;
-}
-
-sub _eq {
-    my($A, $ax, $B, $bx) = @_;
-    # from lineno to index of perl array.
-    $ax--;
-    $bx--;
-    my $exist_a = 0 <= $ax && $ax <= $#{$A};
-    my $exist_b = 0 <= $bx && $bx <= $#{$B};
-    return 0 if $exist_a ^ $exist_b;
-    return ! $exist_a || $A->[$ax] eq $B->[$bx];
 }
 
 1;
@@ -300,7 +294,7 @@ Text::Diff3 - three way text comparison and merging.
 
 =head1 VERSION
 
-0.08
+0.09
 
 =head1 SYNOPSIS
 
@@ -309,14 +303,11 @@ Text::Diff3 - three way text comparison and merging.
     # function style introduced from VERSION 0.08
     use Text::Diff3 qw(:all);
     use Text::Diff3 qw(diff3 merge diff);
-    # component style is no longer maintenance.
-    use Text::Diff3 qw(:factory);
     
-    my $mytext   = [map{chomp; $_} <$input0>]);
-    my $original = [map{chomp; $_} <$input1>]);
-    my $yourtext = [map{chomp; $_} <$input2>]);
+    my $mytext   = [map {chomp; $_} <$input0>]);
+    my $original = [map {chomp; $_} <$input1>]);
+    my $yourtext = [map {chomp; $_} <$input2>]);
     
-    # function style introduced from VERSION 0.08
     my $diff3 = diff3($mytext, $origial, $yourtext);
     for my $r (@{$diff3}) {
         printf "%s %d,%d %d,%d %d,%d\n", @{$r};
@@ -330,7 +321,7 @@ Text::Diff3 - three way text comparison and merging.
         for my $lineno ($r->[5] .. $r->[6]) {
             print $original->[$lineno - 1], "\n";
         }
-    });
+    }
     
     my $merge = merge($mytext, $origial, $yourtext);
     if ($merge->{conflict}) {
@@ -343,22 +334,23 @@ Text::Diff3 - three way text comparison and merging.
     my $diff = diff($original, $mytext);
     for my $r (@{$diff}) {
         printf "%s%s%s\n",
-            $r->[1] >= $r->[2] ? $r->[2] : "$r->[1],$r->[2]",
+            $r->[1] >= $r->[2] ? $r->[1] : "$r->[1],$r->[2]",
             $r->[0],
-            $r->[3] >= $r->[4] ? $r->[4] : "$r->[3],$r->[4]";
+            $r->[3] >= $r->[4] ? $r->[3] : "$r->[3],$r->[4]";
         if ($r->[0] ne 'a') { # delete or change
             for my $lineno ($r->[1] .. $r->[2]) {
                 print q{-}, $original->[$lineno - 1], "\n";
             }
         }
-        if ($r->type ne 'd') { # append or change
+        if ($r->[0] ne 'd') { # append or change
             for my $lineno ($r->[3] .. $r->[4]) {
                 print q{+}, $mytext->[$lineno - 1], "\n";
             }
         }
-    });
+    }
     
-    # component style is no longer maintenance.
+    # component style (no longer maintenance)
+    use Text::Diff3 qw(:factory);
     my $f = Text::Diff3::Factory->new;
     my $mytext   = $f->create_text([map{chomp; $_} <F0>]);
     my $original = $f->create_text([map{chomp; $_} <F1>]);
@@ -384,47 +376,19 @@ Text::Diff3 - three way text comparison and merging.
 This module provides you to compute difference sets between two
 or three texts ported from GNU diff3.c written by R. Smith.
 
-For users convenience, Text::Diff3::Lite includes small diff based on
-the P. Heckel's algorithm. On the other hands, many other systems use
-the popular Least Common Sequence (LCS) algorithm. The merits for
-each algorithm are case by case. In author's experience, two algorithms
-generate almost same results for small local changes in the text.
-In some cases, such as moving blocks of lines, it happened quite
-differences in results.
-
-=head1 VARIABLE
-
-=over
-
-=item C<$DIFF_PROC>
-
-This holds a two-way diff procedure used in function style diff3.
-Please change this as your like.
-
-    $Text::Diff3::DIFF_PROC = sub {
-        my($origtext, $mytext) = @_;
-        # origtext => ['line1', 'line2', 'line3', ...];
-        # mytext => ['line1', 'line2', 'line3', ...];
-        
-        # calcurate two way differences.
-        
-        # for example:
-        my $diff_list = [
-            [qw(c 2 2 2 2)],
-            [qw(a 4 3 4 5)],
-            [qw(d 5 7 7 6)],
-        ];
-        # where line numbers start from 1.
-        return $diff_list;
-    };
-
-=back
+For users convenience, Text::Diff3 includes small diff procedure
+based on the P. Heckel's algorithm. On the other hands,
+many other systems use the popular Least Common Sequence (LCS) algorithm.
+The merits for each algorithm are case by case. In author's experience,
+two algorithms generate almost same results for small local changes
+in the text. In some cases, such as moving blocks of lines,
+it happened quite differences in results.
 
 =head1 FUNCTIONS
 
 =over
 
-=item C<diff3>
+=item C< diff3(\@mytext, \@origial, \@yourtext) >
 
 Calcurate three-way differences. This returns difference sets
 as an array reference.
@@ -459,7 +423,7 @@ where
     when 'A': conflict!
     end
 
-=item C<merge>
+=item C< merge(\@mytext, \@origial, \@yourtext) >
 
 Merge changes by my or your texts on the original text.
 This returns an hash reference.
@@ -492,7 +456,7 @@ returns a following reference:
         ],
     }
 
-=item C<diff>
+=item C< diff(\@original, \@mytext) >
 
 Calcurate two-way differences. This returns difference sets
 as an array reference.
@@ -522,6 +486,34 @@ where
 
 =back
 
+=head1 VARIABLE
+
+=over
+
+=item C<$DIFF_PROC>
+
+This holds a two-way diff procedure used in function style diff3.
+Please change this as your like.
+
+    $Text::Diff3::DIFF_PROC = sub {
+        my($origtext, $mytext) = @_;
+        # origtext => ['line1', 'line2', 'line3', ...];
+        # mytext => ['line1', 'line2', 'line3', ...];
+        
+        # calcurate two way differences.
+        
+        # for example:
+        my $diff_list = [
+            [qw(c 2 2 2 2)],
+            [qw(a 4 3 4 5)],
+            [qw(d 5 7 7 6)],
+        ];
+        # where line numbers start from 1.
+        return $diff_list;
+    };
+
+=back
+
 =head1 SEE ALSO
 
 GNU/diffutils/2.7/diff3.c
@@ -539,7 +531,7 @@ MIZUTANI Tociyuki C<< <tociyuki@gmail.com> >>.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2010 MIZUTANI Tociyuki
+Copyright (C) 2011 MIZUTANI Tociyuki
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

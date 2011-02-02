@@ -5,7 +5,6 @@ use strict;
 use warnings;
 
 use version; our $VERSION = '0.08';
-our $RCS_ID = q{$Id: Factory.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 use Text::Diff3::Diff3;
 use Text::Diff3::DiffHeckel;

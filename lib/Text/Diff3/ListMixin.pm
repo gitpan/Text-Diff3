@@ -5,7 +5,6 @@ use warnings;
 use Carp;
 
 use version; our $VERSION = '0.08';
-our $RCS_ID = q{$Id: ListMixin.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 ## no critic (BuiltinHomonyms AmbiguousNames)
 

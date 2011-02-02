@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use version; our $VERSION = '0.08';
-our $RCS_ID = q{$Id: Base.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 __PACKAGE__->mk_attr_accessor('factory');
 

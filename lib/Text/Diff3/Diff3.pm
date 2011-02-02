@@ -7,7 +7,6 @@ use warnings;
 use base qw(Text::Diff3::Base);
 
 use version; our $VERSION = '0.08';
-our $RCS_ID = q{$Id: Diff3.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 # the three-way diff procedure based on the GNU diff3.c by Randy Smith.
 sub diff3 {

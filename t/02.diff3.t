@@ -51,7 +51,7 @@ __END__
 --- expected
 [['A', 2,5, 2,5, 2,5]]
 
-=== conflict diffent length
+=== conflict different length
 --- input
 [qw(a w x y z f)],
 [qw(a B C D E f)],

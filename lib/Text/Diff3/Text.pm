@@ -5,7 +5,6 @@ use warnings;
 use base qw(Text::Diff3::ListMixin Text::Diff3::Base);
 
 use version; our $VERSION = '0.08';
-our $RCS_ID = q{$Id: Text.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 sub text { return $_[0]->{text} }
 sub list { return $_[0]->{text} } # interface to ListMixin

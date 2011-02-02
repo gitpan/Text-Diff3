@@ -6,7 +6,6 @@ use warnings;
 use base qw(Text::Diff3::ListMixin Text::Diff3::Base);
 
 use version; our $VERSION = '0.08';
-our $RCS_ID = q{$Id: List.pm 0.08 2010/02/16 06:29:23Z tociyuki Exp $};
 
 sub list { return $_[0]->{list} }
 
