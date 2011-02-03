@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 
-use version; our $VERSION = '0.09';
+use version; our $VERSION = '0.10';
 
 our @EXPORT_OK = qw(diff3 merge diff);
 
@@ -20,6 +20,7 @@ sub import {
     my %export;
     if (exists $opt{':factory'}) {
         # compatibility for old version's component style interface.
+        warn "Text::Diff3 ':factory' is deprecated.\n";
         require Text::Diff3::Factory;
         return;
     }
@@ -119,8 +120,8 @@ sub diff3 {
             $range3->[0] = '2';
             for my $d (0 .. $hi0 - $lo0) {
                 my($i0, $i1) = ($lo0 + $d - 1, $lo1 + $d - 1);
-                my $ok0 = 0 <= $i0 && $i0 < $#{$text0};
-                my $ok1 = 0 <= $i1 && $i1 < $#{$text1};
+                my $ok0 = 0 <= $i0 && $i0 <= $#{$text0};
+                my $ok1 = 0 <= $i1 && $i1 <= $#{$text1};
                 if ($ok0 ^ $ok1 || ($ok0 && $text0->[$i0] ne $text1->[$i1])) {
                     $range3->[0] = 'A';
                     last;
@@ -294,13 +295,12 @@ Text::Diff3 - three way text comparison and merging.
 
 =head1 VERSION
 
-0.09
+0.10
 
 =head1 SYNOPSIS
 
     # in default, this module does not export any symbol.
     use Text::Diff3;
-    # function style introduced from VERSION 0.08
     use Text::Diff3 qw(:all);
     use Text::Diff3 qw(diff3 merge diff);
     
@@ -349,27 +349,8 @@ Text::Diff3 - three way text comparison and merging.
         }
     }
     
-    # component style (no longer maintenance)
+    # component style (deprecated. no longer maintenance)
     use Text::Diff3 qw(:factory);
-    my $f = Text::Diff3::Factory->new;
-    my $mytext   = $f->create_text([map{chomp; $_} <F0>]);
-    my $original = $f->create_text([map{chomp; $_} <F1>]);
-    my $yourtext = $f->create_text([map{chomp; $_} <F2>]);
-    my $p3 = $f->create_diff3;
-    my $diff3 = $p3->diff3($mytext, $original, $yourtext);
-    for my $r (@{$diff3->list}) {
-        print $r->as_string, "\n"; # 1 2,3 4,5 6,7
-        print $mytext->as_string_range($r->range0);
-        print $yourtext->as_string_range($r->range1);
-        print $original->as_string_range($r->range2);
-    }
-    my $p2 = $f->create_diff;
-    my $diff = $p2->diff($original, $mytext);
-    for my $r (@{$diff->list}) {
-        print $r->as_string, "\n"; # 100,102c104,110
-        print $original->as_string_range($r->rangeA);
-        print $mytext->as_string_range($r->rangeB);
-    }
 
 =head1 DESCRIPTION
 

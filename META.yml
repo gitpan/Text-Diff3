@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Text-Diff3
-version:            0.09
+version:            0.10
 abstract:           three way text comparison and merging.
 author:
     - MIZUTANI Tociyuki <tociyuki@gmail.com>
